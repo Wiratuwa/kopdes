@@ -85,6 +85,7 @@ def flash(request: Request, msg, cat="success"):
 def render(request: Request, name, **ctx):
     ctx["flashes"] = request.session.pop("flash", [])
     ctx["user"] = request.session.get("nama")
+    ctx["user_foto"] = request.session.get("foto")
     return templates.TemplateResponse(request, name, ctx)
 
 

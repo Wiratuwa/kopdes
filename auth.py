@@ -42,7 +42,9 @@ def login(request: Request):
 def login_post(request: Request, email: str = Form(...), password: str = Form(...)):
     u = query("SELECT * FROM users WHERE email=%s", (email.strip().lower(),), one=True)
     if u and verify_password(password, u["password_hash"]):
-        request.session["user_id"], request.session["nama"] = u["id"], u["nama"]
+        request.session["user_id"] = u["id"]
+        request.session["nama"] = u["nama"]
+        request.session["foto"] = u.get("foto")
         return redirect("/dashboard")
     flash(request, "Email atau password salah", "danger")
     return render(request, "login.html")

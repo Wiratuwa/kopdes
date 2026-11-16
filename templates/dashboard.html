@@ -1,10 +1,26 @@
 {% extends "base.html" %}
 {% block title %}Dashboard · Kopdes Desa Aseli{% endblock %}
 {% block content %}
-<div class="page-head">
-  <p class="lede mb-1">Halo, {{ user }}.</p>
-  <h1 class="display sm">Toko hari ini, <em class="hl">sekilas.</em></h1>
+<div class="page-head d-flex justify-content-between align-items-end flex-wrap gap-2">
+  <div>
+    <p class="lede mb-1">Halo, {{ user }}.</p>
+    <h1 class="display sm">Toko hari ini, <em class="hl">sekilas.</em></h1>
+  </div>
+  <form method="get" action="{{ url_for('dashboard') }}" class="d-flex align-items-center gap-2">
+    <select name="bulan" class="form-select form-select-sm" style="width: auto;">
+      {% for b_num, b_nama in bulan_list %}
+        <option value="{{ b_num }}" {% if b_num == selected_bulan %}selected{% endif %}>{{ b_nama }}</option>
+      {% endfor %}
+    </select>
+    <select name="tahun" class="form-select form-select-sm" style="width: auto;">
+      {% for th in tahun_list %}
+        <option value="{{ th }}" {% if th == selected_tahun %}selected{% endif %}>{{ th }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-sm btn-primary">{{ ic('filter') }} Filter</button>
+  </form>
 </div>
+
 <div class="row g-3 mb-4 stagger">
   {% for label, val, icon in [('Jumlah Produk', s.jml_produk, 'box-seam'), ('Jumlah Transaksi', s.jml_transaksi, 'receipt'),
                               ('Omzet Hari Ini', s.omzet_hari_ini|rp, 'cash-coin'), ('Omzet Total', s.omzet_total|rp, 'graph-up-arrow')] %}
@@ -14,6 +30,52 @@
   </div></div>
   {% endfor %}
 </div>
+
+<!-- FITUR 1: Grafik Barang Paling Banyak Terjual Per Minggu (Range 1 Bulan) -->
+<div class="card mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span>{{ ic('bar-chart') }} <strong>Grafik Produk Terlaris Per Minggu</strong> &middot; {{ nama_bulan }} {{ selected_tahun }}</span>
+    <span class="badge bg-primary">Rentang 1 Bulan</span>
+  </div>
+  <div class="card-body">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-7">
+        <div style="position: relative; height: 260px;">
+          <canvas id="weeklyTopChart"></canvas>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <h6 class="text-muted text-uppercase fw-bold mb-3" style="font-size: 0.75rem; letter-spacing: 0.5px;">Ringkasan Juara Mingguan</h6>
+        <div class="list-group list-group-flush">
+          {% for w in weekly_data %}
+          <div class="list-group-item d-flex justify-content-between align-items-center px-0 py-2 border-bottom">
+            <div>
+              <span class="badge bg-secondary me-2">{{ w.label_minggu }}</span>
+              <small class="text-muted d-block d-sm-inline">({{ w.range }})</small>
+              <div class="fw-semibold mt-1">
+                {% if w.has_sales %}
+                  🏆 {{ w.produk }}
+                {% else %}
+                  <span class="text-muted">- {{ w.produk }}</span>
+                {% endif %}
+              </div>
+            </div>
+            <div class="text-end">
+              {% if w.has_sales %}
+                <span class="badge bg-success fs-6">{{ w.qty }} terjual</span>
+                <div class="small text-muted">{{ w.nominal|rp }}</div>
+              {% else %}
+                <span class="badge bg-light text-muted">0 terjual</span>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="row g-3">
   <div class="col-md-6"><div class="card"><div class="card-header">{{ ic('exclamation-triangle') }}Stok Menipis (&lt; 10)</div>
     <ul class="list-group list-group-flush">
@@ -26,4 +88,90 @@
       {% else %}<li class="list-group-item text-muted">{{ ic('inbox') }} Belum ada transaksi</li>{% endfor %}
     </ul></div></div>
 </div>
+
+<!-- Chart.js Script -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const ctx = document.getElementById('weeklyTopChart').getContext('2d');
+  const labels = {{ chart_labels | tojson }};
+  const values = {{ chart_values | tojson }};
+  const products = {{ chart_products | tojson }};
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Jumlah Item Terjual',
+        data: values,
+        backgroundColor: [
+          'rgba(59, 130, 246, 0.8)',
+          'rgba(16, 185, 129, 0.8)',
+          'rgba(245, 158, 11, 0.8)',
+          'rgba(239, 68, 68, 0.8)',
+          'rgba(139, 92, 246, 0.8)'
+        ],
+        borderColor: [
+          '#2563eb',
+          '#059669',
+          '#d97706',
+          '#dc2626',
+          '#7c3aed'
+        ],
+        borderWidth: 1.5,
+        borderRadius: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        },
+        tooltip: {
+          backgroundColor: 'rgba(15, 23, 42, 0.9)',
+          titleFont: { size: 13, weight: 'bold' },
+          bodyFont: { size: 12 },
+          padding: 10,
+          callbacks: {
+            title: function (items) {
+              const idx = items[0].dataIndex;
+              return labels[idx] + ' (' + products[idx] + ')';
+            },
+            label: function (context) {
+              const qty = context.raw;
+              const prod = products[context.dataIndex];
+              if (qty === 0) return 'Tidak ada barang terjual';
+              return 'Terbanyak: ' + prod + ' (' + qty + ' item)';
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            precision: 0,
+            color: '#64748b'
+          },
+          grid: {
+            color: 'rgba(148, 163, 184, 0.15)'
+          }
+        },
+        x: {
+          ticks: {
+            color: '#64748b',
+            font: { weight: '600' }
+          },
+          grid: {
+            display: false
+          }
+        }
+      }
+    }
+  });
+});
+</script>
 {% endblock %}

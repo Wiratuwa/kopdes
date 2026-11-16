@@ -25,7 +25,17 @@
       {{ nl('Transaksi', 'transaksi_list', '/transaksi', 'receipt') }}
       {{ nl('Laporan', 'laporan', '/laporan', 'bar-chart-line') }}
     </nav>
-    <span class="nav-user">{{ ic('person-circle') }}{{ user }}</span>
+    <a class="nav-user" href="{{ url_for('settings_page') }}">
+      {% if user_foto and user_foto.startswith('data:image') %}
+        <img src="{{ user_foto }}" class="rounded-circle me-1" style="width:24px;height:24px;object-fit:cover;">
+      {% elif user_foto %}
+        <span class="me-1">{{ user_foto }}</span>
+      {% else %}
+        {{ ic('person-circle') }}
+      {% endif %}
+      {{ user }}
+    </a>
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('settings_page') }}">{{ ic('gear') }}Pengaturan</a>
     <a class="btn btn-secondary btn-sm" href="{{ url_for('logout') }}">{{ ic('box-arrow-right') }}Keluar</a>
     {% else %}
     <div class="ms-auto d-flex gap-2">

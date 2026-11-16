@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% block title %}Pengaturan Akun · Kopdes Desa Aseli{% endblock %}
+{% block content %}
+<div class="page-head mb-4">
+  <p class="lede mb-1">Manajemen Pengguna</p>
+  <h1 class="display sm">{{ ic('gear') }}Pengaturan <em class="hl">Akun</em></h1>
+</div>
+
+<div class="row g-4">
+  <!-- Kolom Kiri: Profil & PFP -->
+  <div class="col-lg-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-white fw-bold">
+        {{ ic('person-badge') }} Informasi Profil
+      </div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('settings_profil_post') }}" id="profilForm">
+          <input type="hidden" name="foto" id="fotoInput" value="{{ u.foto or '' }}">
+          
+          <!-- Avatar Preview & Upload -->
+          <div class="text-center mb-4">
+            <div class="position-relative d-inline-block">
+              <div id="avatarPreviewBox" class="rounded-circle border d-flex align-items-center justify-content-center shadow-sm"
+                   style="width: 110px; height: 110px; overflow: hidden; background: #f8fafc; font-size: 3rem; margin: 0 auto;">
+                {% if u.foto and u.foto.startswith('data:image') %}
+                  <img src="{{ u.foto }}" id="avatarImg" style="width: 100%; height: 100%; object-fit: cover;">
+                {% elif u.foto %}
+                  <span id="avatarEmoji">{{ u.foto }}</span>
+                {% else %}
+                  <span id="avatarFallback">{{ ic('person-fill') }}</span>
+                {% endif %}
+              </div>
+            </div>
+            
+            <div class="mt-3">
+              <label class="btn btn-outline-primary btn-sm mb-1" for="fileUpload">
+                {{ ic('camera') }} Upload Foto Baru
+              </label>
+              <input type="file" id="fileUpload" accept="image/*" class="d-none">
+              
+              <button type="button" class="btn btn-outline-secondary btn-sm mb-1 ms-1" id="btnHapusFoto">
+                {{ ic('trash') }} Hapus Foto
+              </button>
+            </div>
+
+            <!-- Preset Avatar Emojis -->
+            <div class="mt-2">
+              <small class="text-muted d-block mb-1">Atau pilih avatar karakter:</small>
+              <div class="d-flex justify-content-center gap-2 flex-wrap">
+                {% for av in ['👨‍🌾', '👩‍🌾', '🛒', '🌾', '👔', '🌟', '👤'] %}
+                <button type="button" class="btn btn-sm btn-light border preset-avatar" data-emoji="{{ av }}" style="font-size: 1.25rem; padding: 2px 8px;">
+                  {{ av }}
+                </button>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Nama Lengkap</label>
+            <input type="text" name="nama" class="form-control" value="{{ u.nama }}" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Alamat Email</label>
+            <input type="email" class="form-control bg-light" value="{{ u.email }}" readonly>
+            <small class="text-muted">Email digunakan untuk login dan tidak dapat diubah.</small>
+          </div>
+
+          <div class="mb-3">
+            <small class="text-muted">Akun dibuat sejak: <strong>{{ u.created_at.strftime('%d %B %Y') if u.created_at else '-' }}</strong></small>
+          </div>
+
+          <div class="text-end">
+            <button type="submit" class="btn btn-primary">
+              {{ ic('check-lg') }} Simpan Perubahan Profil
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Kolom Kanan: Keamanan & Password -->
+  <div class="col-lg-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-white fw-bold">
+        {{ ic('shield-lock') }} Keamanan & Password
+      </div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('settings_password_post') }}">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Password Saat Ini</label>
+            <div class="input-group">
+              <span class="input-group-text">{{ ic('key') }}</span>
+              <input type="password" name="current_password" class="form-control" placeholder="Masukkan password lama" required>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Password Baru</label>
+            <div class="input-group">
+              <span class="input-group-text">{{ ic('lock') }}</span>
+              <input type="password" name="new_password" class="form-control" placeholder="Minimal 6 karakter" required minlength="6">
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Konfirmasi Password Baru</label>
+            <div class="input-group">
+              <span class="input-group-text">{{ ic('lock-fill') }}</span>
+              <input type="password" name="confirm_password" class="form-control" placeholder="Ulangi password baru" required minlength="6">
+            </div>
+          </div>
+
+          <div class="alert alert-info py-2 small mb-4">
+            {{ ic('info-circle') }} Pastikan password baru Anda kuat dan mudah diingat.
+          </div>
+
+          <div class="text-end">
+            <button type="submit" class="btn btn-warning">
+              {{ ic('arrow-repeat') }} Perbarui Password
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const fileInput = document.getElementById("fileUpload");
+  const fotoInput = document.getElementById("fotoInput");
+  const previewBox = document.getElementById("avatarPreviewBox");
+  const btnHapus = document.getElementById("btnHapusFoto");
+
+  // Kompres dan ubah gambar lokal menjadi Data URL (Base64)
+  fileInput.addEventListener("change", function (e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Harap pilih file gambar (JPG, PNG, atau WEBP).");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function (event) {
+      const img = new Image();
+      img.onload = function () {
+        const canvas = document.createElement("canvas");
+        const maxDim = 180;
+        let w = img.width;
+        let h = img.height;
+
+        if (w > h) {
+          if (w > maxDim) {
+            h = Math.round((h * maxDim) / w);
+            w = maxDim;
+          }
+        } else {
+          if (h > maxDim) {
+            w = Math.round((w * maxDim) / h);
+            h = maxDim;
+          }
+        }
+
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, w, h);
+
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+        fotoInput.value = dataUrl;
+        previewBox.innerHTML = `<img src="${dataUrl}" style="width:100%;height:100%;object-fit:cover;">`;
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // Pilih preset avatar emoji
+  document.querySelectorAll(".preset-avatar").forEach(btn => {
+    btn.addEventListener("click", function () {
+      const em = this.getAttribute("data-emoji");
+      fotoInput.value = em;
+      previewBox.innerHTML = `<span style="font-size:3.2rem;">${em}</span>`;
+    });
+  });
+
+  // Hapus foto / reset avatar
+  btnHapus.addEventListener("click", function () {
+    fotoInput.value = "";
+    previewBox.innerHTML = `<i class="bi bi-person-fill" style="font-size:3rem;color:#94a3b8;"></i>`;
+  });
+});
+</script>
+{% endblock %}
+

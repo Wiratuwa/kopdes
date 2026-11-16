@@ -1,20 +1,74 @@
 {% extends "base.html" %}
 {% block title %}Master Produk · Kopdes Desa Aseli{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h1 class="page-title">{{ ic('box-seam') }}Master Produk</h1>
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+  <div>
+    <h1 class="page-title mb-0">{{ ic('box-seam') }}Master Produk</h1>
+    <small class="text-muted">Total: {{ total }} produk ditemukan</small>
+  </div>
   <a class="btn btn-primary" href="{{ url_for('produk_tambah') }}">{{ ic('plus-lg') }}Tambah Produk</a>
 </div>
-<div class="table-responsive"><table class="table table-hover">
-  <thead><tr><th>Kode</th><th>Nama</th><th class="text-end">Harga</th><th class="text-end">Stok</th><th></th></tr></thead>
+
+<!-- Search & Filter Bar -->
+<div class="card mb-3 p-3">
+  <form method="get" action="{{ url_for('produk_list') }}" class="row g-2 align-items-center">
+    <div class="col-12 col-md-5">
+      <div class="input-group">
+        <span class="input-group-text bg-white">{{ ic('search') }}</span>
+        <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Cari nama barang atau kode produk...">
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <select name="stok_filter" class="form-select">
+        <option value="semua" {% if stok_filter == 'semua' %}selected{% endif %}>Semua Status Stok</option>
+        <option value="aman" {% if stok_filter == 'aman' %}selected{% endif %}>Stok Aman (&ge; 10)</option>
+        <option value="menipis" {% if stok_filter == 'menipis' %}selected{% endif %}>Stok Menipis (&lt; 10)</option>
+        <option value="habis" {% if stok_filter == 'habis' %}selected{% endif %}>Stok Habis (0)</option>
+      </select>
+    </div>
+    <div class="col-6 col-md-3">
+      <select name="sort" class="form-select">
+        <option value="kode_asc" {% if sort == 'kode_asc' %}selected{% endif %}>Kode (A-Z)</option>
+        <option value="kode_desc" {% if sort == 'kode_desc' %}selected{% endif %}>Kode (Z-A)</option>
+        <option value="nama_asc" {% if sort == 'nama_asc' %}selected{% endif %}>Nama (A-Z)</option>
+        <option value="nama_desc" {% if sort == 'nama_desc' %}selected{% endif %}>Nama (Z-A)</option>
+        <option value="harga_asc" {% if sort == 'harga_asc' %}selected{% endif %}>Harga Termurah</option>
+        <option value="harga_desc" {% if sort == 'harga_desc' %}selected{% endif %}>Harga Termahal</option>
+        <option value="stok_desc" {% if sort == 'stok_desc' %}selected{% endif %}>Stok Terbanyak</option>
+        <option value="stok_asc" {% if sort == 'stok_asc' %}selected{% endif %}>Stok Tersedikit</option>
+      </select>
+    </div>
+    <div class="col-12 col-md-1 d-flex gap-1">
+      <button type="submit" class="btn btn-primary w-100" title="Terapkan Filter">{{ ic('filter') }}</button>
+      {% if q or stok_filter != 'semua' or sort != 'kode_asc' %}
+        <a href="{{ url_for('produk_list') }}" class="btn btn-outline-secondary" title="Reset Filter">{{ ic('x-lg') }}</a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<div class="table-responsive"><table class="table table-hover align-middle">
+  <thead><tr><th>Kode</th><th>Nama</th><th class="text-end">Harga</th><th class="text-end">Stok</th><th class="text-end">Aksi</th></tr></thead>
   <tbody>
   {% for p in rows %}
-  <tr><td>{{ p.kode }}</td><td>{{ p.nama }}</td><td class="text-end">{{ p.harga|rp }}</td><td class="text-end">{{ p.stok }}</td>
+  <tr>
+    <td><span class="badge bg-light text-dark border">{{ p.kode }}</span></td>
+    <td class="fw-medium">{{ p.nama }}</td>
+    <td class="text-end fw-semibold">{{ p.harga|rp }}</td>
+    <td class="text-end">
+      {% if p.stok == 0 %}
+        <span class="badge bg-danger">Habis</span>
+      {% elif p.stok < 10 %}
+        <span class="badge bg-warning text-dark">{{ p.stok }} (Menipis)</span>
+      {% else %}
+        <span class="badge bg-success">{{ p.stok }}</span>
+      {% endif %}
+    </td>
     <td class="text-end">
       <a class="btn btn-sm btn-secondary" href="{{ url_for('produk_edit', id=p.id) }}">{{ ic('pencil') }}Edit</a>
       <form class="d-inline" method="post" action="{{ url_for('produk_hapus', id=p.id) }}" onsubmit="return confirm('Hapus produk ini?')">
         <button class="btn btn-sm btn-danger">{{ ic('trash') }}Hapus</button></form>
     </td></tr>
-  {% else %}<tr><td colspan="5" class="text-center text-muted empty">{{ ic('inbox') }}Belum ada data</td></tr>{% endfor %}
+  {% else %}<tr><td colspan="5" class="text-center text-muted empty py-4">{{ ic('inbox') }} Tidak ada produk yang sesuai kriteria pencarian</td></tr>{% endfor %}
   </tbody></table></div>
 {% endblock %}

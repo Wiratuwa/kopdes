@@ -1,4 +1,4 @@
-"""Master produk: daftar, tambah, edit, hapus."""
+"""Master produk: daftar (dengan search & filter), tambah, edit, hapus."""
 from fastapi import APIRouter, Depends, Form, Request
 from psycopg2 import errors
 
@@ -8,8 +8,46 @@ router = APIRouter(dependencies=[Depends(login_required)])
 
 
 @router.get("/produk")
-def produk_list(request: Request):
-    return render(request, "produk.html", rows=query("SELECT * FROM produk ORDER BY kode"))
+def produk_list(request: Request, q: str = "", stok_filter: str = "semua", sort: str = "kode_asc"):
+    sql = "SELECT * FROM produk WHERE 1=1"
+    params = []
+
+    clean_q = q.strip()
+    if clean_q:
+        sql += " AND (LOWER(kode) LIKE %s OR LOWER(nama) LIKE %s)"
+        kw = f"%{clean_q.lower()}%"
+        params.extend([kw, kw])
+
+    if stok_filter == "aman":
+        sql += " AND stok >= 10"
+    elif stok_filter == "menipis":
+        sql += " AND stok > 0 AND stok < 10"
+    elif stok_filter == "habis":
+        sql += " AND stok = 0"
+
+    sort_map = {
+        "kode_asc": "kode ASC",
+        "kode_desc": "kode DESC",
+        "nama_asc": "nama ASC",
+        "nama_desc": "nama DESC",
+        "harga_asc": "harga ASC",
+        "harga_desc": "harga DESC",
+        "stok_asc": "stok ASC",
+        "stok_desc": "stok DESC",
+    }
+    order_clause = sort_map.get(sort, "kode ASC")
+    sql += f" ORDER BY {order_clause}"
+
+    rows = query(sql, tuple(params))
+    return render(
+        request,
+        "produk.html",
+        rows=rows,
+        q=clean_q,
+        stok_filter=stok_filter,
+        sort=sort,
+        total=len(rows)
+    )
 
 
 @router.get("/produk/tambah")

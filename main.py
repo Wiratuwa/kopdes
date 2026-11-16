@@ -9,6 +9,7 @@ import auth
 import dashboard
 import laporan
 import produk
+import settings
 import transaksi
 from core import BASE, NotLoggedIn, redirect, templates
 
@@ -27,5 +28,5 @@ async def _belum_login(request: Request, exc: NotLoggedIn):
     return redirect("/login")
 
 
-for modul in (auth, dashboard, produk, transaksi, laporan):
+for modul in (auth, dashboard, produk, transaksi, laporan, settings):
     app.include_router(modul.router)
