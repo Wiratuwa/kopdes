@@ -7,5 +7,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}
+# Menyesuaikan user dan hak akses untuk platform container seperti Hugging Face Spaces
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+USER appuser
 
+EXPOSE 7860
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7860"]
