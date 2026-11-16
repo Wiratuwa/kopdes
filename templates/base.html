@@ -51,5 +51,6 @@
   {% endfor %}
   {% block content %}{% endblock %}
 </main>
+{% if user %}{% include 'chatbot_widget.html' %}{% endif %}
 </body>
 </html>

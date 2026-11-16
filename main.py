@@ -6,6 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware  # session cookie, ditandatangani itsdangerous
 
 import auth
+import chatbot
 import dashboard
 import laporan
 import produk
@@ -28,5 +29,5 @@ async def _belum_login(request: Request, exc: NotLoggedIn):
     return redirect("/login")
 
 
-for modul in (auth, dashboard, produk, transaksi, laporan, settings):
+for modul in (auth, dashboard, produk, transaksi, laporan, settings, chatbot):
     app.include_router(modul.router)

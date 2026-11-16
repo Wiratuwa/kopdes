@@ -1,0 +1,129 @@
+<!-- Chatbot Widget: Aseli Bot -->
+<style>
+#cb-toggle{position:fixed;bottom:1.5rem;left:1.5rem;z-index:9999;width:56px;height:56px;border-radius:50%;
+  background:var(--ink);color:var(--cream);border:none;cursor:pointer;display:grid;place-items:center;
+  box-shadow:0 6px 24px rgba(17,17,17,.35);transition:transform .2s var(--ease-out),background .2s ease}
+#cb-toggle:hover{transform:scale(1.08);background:var(--orange)}
+#cb-toggle .bi{font-size:1.5rem;transition:transform .3s var(--ease-out)}
+#cb-toggle.open .bi{transform:rotate(90deg)}
+
+#cb-panel{position:fixed;bottom:5.5rem;left:1.5rem;z-index:9998;width:min(380px,calc(100vw - 3rem));
+  height:min(520px,calc(100vh - 8rem));background:var(--surface);border:1px solid var(--line);
+  border-radius:20px;box-shadow:0 24px 64px -16px rgba(17,17,17,.4);display:flex;flex-direction:column;
+  transform:scale(.92) translateY(12px);opacity:0;pointer-events:none;
+  transition:transform .25s var(--ease-out),opacity .2s ease}
+#cb-panel.show{transform:scale(1) translateY(0);opacity:1;pointer-events:auto}
+
+#cb-head{padding:.9rem 1.1rem;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:.6rem;flex:none}
+#cb-head .dot{width:10px;height:10px;border-radius:50%;background:#34c759;flex:none}
+#cb-head strong{font-size:.95rem;letter-spacing:-.02em}
+#cb-head small{color:var(--muted);font-size:.78rem;margin-left:auto}
+
+#cb-msgs{flex:1;overflow-y:auto;padding:1rem 1.1rem;display:flex;flex-direction:column;gap:.65rem}
+#cb-msgs::-webkit-scrollbar{width:5px}
+#cb-msgs::-webkit-scrollbar-thumb{background:var(--line);border-radius:99px}
+
+.cb-msg{max-width:85%;padding:.65rem .9rem;border-radius:14px;font-size:.88rem;line-height:1.5;
+  animation:rise .25s var(--ease-out) backwards;word-wrap:break-word}
+.cb-msg.bot{align-self:flex-start;background:color-mix(in srgb,var(--ink) 8%,var(--surface));
+  border-bottom-left-radius:4px}
+.cb-msg.user{align-self:flex-end;background:var(--ink);color:var(--cream);border-bottom-right-radius:4px}
+.cb-msg.bot p{margin:0 0 .4rem}.cb-msg.bot p:last-child{margin:0}
+.cb-msg.bot strong{font-weight:600}
+.cb-msg.bot ul,.cb-msg.bot ol{margin:.2rem 0;padding-left:1.3rem}
+.cb-msg.bot code{background:color-mix(in srgb,var(--ink) 12%,transparent);padding:.1rem .35rem;border-radius:4px;font-size:.82rem}
+.cb-typing{align-self:flex-start;display:flex;gap:4px;padding:.7rem .9rem}
+.cb-typing span{width:7px;height:7px;border-radius:50%;background:var(--muted);
+  animation:bounce .6s ease-in-out infinite}
+.cb-typing span:nth-child(2){animation-delay:.15s}
+.cb-typing span:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+#cb-input-wrap{padding:.7rem 1rem;border-top:1px solid var(--line);display:flex;gap:.5rem;flex:none}
+#cb-input{flex:1;border:1px solid var(--line);border-radius:12px;padding:.55rem .85rem;
+  font-size:.88rem;background:var(--surface);color:var(--ink);outline:none;font-family:inherit;resize:none}
+#cb-input:focus{border-color:var(--ink);box-shadow:0 0 0 3px color-mix(in srgb,var(--orange) 22%,transparent)}
+#cb-input::placeholder{color:var(--muted)}
+#cb-send{width:38px;height:38px;border-radius:50%;border:none;background:var(--orange);color:#fff;
+  cursor:pointer;display:grid;place-items:center;flex:none;transition:background .15s ease,transform .12s ease}
+#cb-send:hover{background:var(--ink)}
+#cb-send:active{transform:scale(.92)}
+#cb-send:disabled{opacity:.4;cursor:default}
+</style>
+
+<button id="cb-toggle" type="button" aria-label="Buka chatbot" onclick="cbToggle()">
+  <i class="bi bi-chat-dots" aria-hidden="true"></i>
+</button>
+
+<div id="cb-panel">
+  <div id="cb-head">
+    <div class="dot"></div>
+    <strong>Aseli Bot</strong>
+    <small>AI Assistant</small>
+  </div>
+  <div id="cb-msgs">
+    <div class="cb-msg bot">Halo! 👋 Aku <strong>Aseli Bot</strong>, asisten koperasi desa. Tanya apa saja tentang produk, stok, penjualan, atau cara pakai website ini!</div>
+  </div>
+  <div id="cb-input-wrap">
+    <input id="cb-input" type="text" placeholder="Ketik pesan…" autocomplete="off"
+           onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();cbSend()}">
+    <button id="cb-send" type="button" onclick="cbSend()" aria-label="Kirim">
+      <i class="bi bi-send-fill" style="font-size:.9rem"></i>
+    </button>
+  </div>
+</div>
+
+<script>
+const cbHistory=[];
+function cbToggle(){
+  const p=document.getElementById('cb-panel'),b=document.getElementById('cb-toggle');
+  p.classList.toggle('show');b.classList.toggle('open');
+  if(p.classList.contains('show'))document.getElementById('cb-input').focus();
+}
+function cbAddMsg(text,role){
+  const d=document.getElementById('cb-msgs'),m=document.createElement('div');
+  m.className='cb-msg '+role;
+  if(role==='bot'){m.innerHTML=cbMarkdown(text)}else{m.textContent=text}
+  d.appendChild(m);d.scrollTop=d.scrollHeight;return m;
+}
+function cbMarkdown(t){
+  // Simple markdown: bold, italic, bullet, code
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/`(.+?)`/g,'<code>$1</code>')
+    .replace(/^[-•] (.+)$/gm,'<li>$1</li>')
+    .replace(/(<li>.*<\/li>)/gs,'<ul>$1</ul>')
+    .replace(/\n{2,}/g,'</p><p>').replace(/\n/g,'<br>')
+    .replace(/^/,'<p>').replace(/$/,'</p>');
+}
+function cbShowTyping(){
+  const d=document.getElementById('cb-msgs'),t=document.createElement('div');
+  t.className='cb-typing';t.id='cb-typing';
+  t.innerHTML='<span></span><span></span><span></span>';
+  d.appendChild(t);d.scrollTop=d.scrollHeight;
+}
+function cbHideTyping(){const t=document.getElementById('cb-typing');if(t)t.remove();}
+async function cbSend(){
+  const inp=document.getElementById('cb-input'),msg=inp.value.trim();
+  if(!msg)return;
+  inp.value='';
+  cbAddMsg(msg,'user');
+  cbHistory.push({role:'user',text:msg});
+  document.getElementById('cb-send').disabled=true;
+  cbShowTyping();
+  try{
+    const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({message:msg,history:cbHistory.slice(-10)})});
+    const d=await r.json();
+    cbHideTyping();
+    cbAddMsg(d.reply||'Maaf, tidak ada respons.','bot');
+    cbHistory.push({role:'model',text:d.reply||''});
+  }catch(e){
+    cbHideTyping();
+    cbAddMsg('Maaf, terjadi kesalahan koneksi. Coba lagi. 🙏','bot');
+  }
+  document.getElementById('cb-send').disabled=false;
+  document.getElementById('cb-input').focus();
+}
+</script>
