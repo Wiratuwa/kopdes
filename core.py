@@ -15,13 +15,19 @@ from markupsafe import Markup
 
 BASE = Path(__file__).parent
 
-# Baca file .env kalau ada (untuk jalan di laptop). Di hosting, pakai environment variable.
-_env = BASE / ".env"
-if _env.exists():
-    for line in _env.read_text().splitlines():
-        if "=" in line and not line.strip().startswith("#"):
-            k, v = line.split("=", 1)
-            os.environ.setdefault(k.strip(), v.strip())
+# Baca file .env dan .env.local kalau ada (untuk laptop / dev). Di hosting, pakai environment variable.
+for env_name in (".env", ".env.local"):
+    _env = BASE / env_name
+    if _env.exists():
+        for line in _env.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if "=" in line and not line.startswith("#"):
+                k, v = line.split("=", 1)
+                os.environ[k.strip()] = v.strip().strip('"').strip("'")
+
+# Pastikan DATABASE_URL tersedia (fallback ke DATABASE_URL_UNPOOLED jika ada)
+if "DATABASE_URL" not in os.environ and "DATABASE_URL_UNPOOLED" in os.environ:
+    os.environ["DATABASE_URL"] = os.environ["DATABASE_URL_UNPOOLED"]
 
 templates = Jinja2Templates(directory=str(BASE / "templates"))
 
