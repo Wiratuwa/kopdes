@@ -1,0 +1,15 @@
+<div class="hero-visual" aria-hidden="true">
+  <div class="panel">
+    <div class="bars">
+      {% for h in [0.3, 0.45, 0.38, 0.62, 0.5, 0.78, 0.95] %}<i class="bar" style="--h:{{ h }};--i:{{ loop.index0 }}"></i>{% endfor %}
+    </div>
+  </div>
+  <div class="float-card">
+    <div class="fc-title">Setiap kali ada penjualan</div>
+    <ul>
+      {% for t in ['Transaksi tersimpan', 'Stok berkurang otomatis', 'Masuk laporan, siap diekspor ke Excel'] %}
+      <li style="--i:{{ loop.index0 }}"><span class="check" style="--i:{{ loop.index0 }}"><svg viewBox="0 0 12 12" width="12" height="12"><path pathLength="1" d="M2.5 6.4l2.3 2.3 4.7-5"/></svg></span>{{ t }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>

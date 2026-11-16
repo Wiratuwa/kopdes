@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Transaksi Baru · Kopdes Desa Aseli{% endblock %}
+{% block content %}
+<h1 class="page-title mb-3">{{ ic('cart-plus') }}Transaksi Baru</h1>
+<form method="post" class="card card-body" style="max-width:480px">
+  <label class="form-label" for="produk_id">Produk</label>
+  <div class="field mb-3">{{ ic('box-seam') }}<select class="form-select" id="produk_id" name="produk_id" required>
+    {% for p in produk %}<option value="{{ p.id }}">{{ p.kode }} - {{ p.nama }} ({{ p.harga|rp }}, stok {{ p.stok }})</option>{% endfor %}
+  </select></div>
+  <label class="form-label" for="qty">Jumlah</label>
+  <div class="field mb-4">{{ ic('123') }}<input class="form-control" id="qty" type="number" name="qty" min="1" value="1" required></div>
+  <div class="d-flex gap-2"><button class="btn btn-primary">{{ ic('check-lg') }}Simpan</button>
+  <a class="btn btn-secondary" href="{{ url_for('transaksi_list') }}">{{ ic('x-lg') }}Batal</a></div>
+</form>
+{% endblock %}

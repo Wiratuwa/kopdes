@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Laporan · Kopdes Desa Aseli{% endblock %}
+{% block content %}
+<h1 class="page-title mb-3">{{ ic('bar-chart-line') }}Laporan Penjualan</h1>
+<form class="row g-2 mb-3 d-print-none" method="get">
+  <div class="col-auto"><input class="form-control" type="date" name="dari" value="{{ dari }}" aria-label="Dari tanggal"></div>
+  <div class="col-auto"><input class="form-control" type="date" name="sampai" value="{{ sampai }}" aria-label="Sampai tanggal"></div>
+  <div class="col-auto"><button class="btn btn-primary">{{ ic('search') }}Tampilkan</button></div>
+  <div class="col-auto"><a class="btn btn-success" href="{{ url_for('laporan_excel') }}?dari={{ dari }}&sampai={{ sampai }}">{{ ic('file-earmark-excel') }}Export Excel</a></div>
+  <div class="col-auto"><button type="button" class="btn btn-secondary" onclick="window.print()">{{ ic('printer') }}Cetak</button></div>
+</form>
+<p>{{ ic('calendar3') }} Periode: <b>{{ dari }}</b> s/d <b>{{ sampai }}</b></p>
+<div class="table-responsive"><table class="table table-hover">
+  <thead><tr><th>No</th><th>Tanggal</th><th>Produk</th><th class="text-end">Qty</th><th class="text-end">Harga</th><th class="text-end">Total</th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+  <tr><td>{{ r.no_transaksi }}</td><td>{{ r.tanggal }}</td><td>{{ r.produk }}</td>
+    <td class="text-end">{{ r.qty }}</td><td class="text-end">{{ r.harga|rp }}</td><td class="text-end">{{ r.total|rp }}</td></tr>
+  {% else %}<tr><td colspan="6" class="text-center text-muted empty">{{ ic('inbox') }}Tidak ada data pada periode ini</td></tr>{% endfor %}
+  </tbody>
+  <tfoot><tr class="fw-bold"><td colspan="5" class="text-end">Total Penjualan</td><td class="text-end">{{ total|rp }}</td></tr></tfoot>
+</table></div>
+{% endblock %}

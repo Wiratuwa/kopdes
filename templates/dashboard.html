@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · Kopdes Desa Aseli{% endblock %}
+{% block content %}
+<div class="page-head">
+  <p class="lede mb-1">Halo, {{ user }}.</p>
+  <h1 class="display sm">Toko hari ini, <em class="hl">sekilas.</em></h1>
+</div>
+<div class="row g-3 mb-4 stagger">
+  {% for label, val, icon in [('Jumlah Produk', s.jml_produk, 'box-seam'), ('Jumlah Transaksi', s.jml_transaksi, 'receipt'),
+                              ('Omzet Hari Ini', s.omzet_hari_ini|rp, 'cash-coin'), ('Omzet Total', s.omzet_total|rp, 'graph-up-arrow')] %}
+  <div class="col-6 col-md-3"><div class="card stat{{ ' hot' if loop.index == 3 }}">
+    <span class="stat-ic">{{ ic(icon) }}</span>
+    <small>{{ label }}</small><div class="num">{{ val }}</div>
+  </div></div>
+  {% endfor %}
+</div>
+<div class="row g-3">
+  <div class="col-md-6"><div class="card"><div class="card-header">{{ ic('exclamation-triangle') }}Stok Menipis (&lt; 10)</div>
+    <ul class="list-group list-group-flush">
+      {% for p in menipis %}<li class="list-group-item d-flex justify-content-between align-items-center">{{ p.nama }}<span class="badge-stok">{{ p.stok }}</span></li>
+      {% else %}<li class="list-group-item text-muted">{{ ic('check2-circle') }} Semua stok aman</li>{% endfor %}
+    </ul></div></div>
+  <div class="col-md-6"><div class="card"><div class="card-header">{{ ic('clock-history') }}Transaksi Terakhir</div>
+    <ul class="list-group list-group-flush">
+      {% for t in terakhir %}<li class="list-group-item d-flex justify-content-between">{{ t.produk }} x{{ t.qty }}<span class="fw-semibold">{{ t.total|rp }}</span></li>
+      {% else %}<li class="list-group-item text-muted">{{ ic('inbox') }} Belum ada transaksi</li>{% endfor %}
+    </ul></div></div>
+</div>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if p else 'Tambah' }} Produk · Kopdes Desa Aseli{% endblock %}
+{% block content %}
+<h1 class="page-title mb-3">{{ ic('pencil-square' if p else 'plus-circle') }}{{ 'Edit' if p else 'Tambah' }} Produk</h1>
+<form method="post" class="card card-body" style="max-width:480px">
+  <label class="form-label" for="kode">Kode</label>
+  <div class="field mb-3">{{ ic('upc-scan') }}<input class="form-control" id="kode" name="kode" value="{{ p.kode if p else '' }}" maxlength="20" required></div>
+  <label class="form-label" for="nama">Nama</label>
+  <div class="field mb-3">{{ ic('tag') }}<input class="form-control" id="nama" name="nama" value="{{ p.nama if p else '' }}" required></div>
+  <label class="form-label" for="harga">Harga</label>
+  <div class="field mb-3">{{ ic('cash') }}<input class="form-control" id="harga" type="number" min="0" step="1" name="harga" value="{{ p.harga|int if p else '' }}" required></div>
+  <label class="form-label" for="stok">Stok</label>
+  <div class="field mb-4">{{ ic('boxes') }}<input class="form-control" id="stok" type="number" min="0" name="stok" value="{{ p.stok if p else 0 }}" required></div>
+  <div class="d-flex gap-2"><button class="btn btn-primary">{{ ic('check-lg') }}Simpan</button>
+  <a class="btn btn-secondary" href="{{ url_for('produk_list') }}">{{ ic('x-lg') }}Batal</a></div>
+</form>
+{% endblock %}
