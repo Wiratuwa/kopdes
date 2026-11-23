@@ -113,7 +113,7 @@ def login_post(request: Request, email: str = Form(...), password: str = Form(..
         request.session["foto"] = u.get("foto")
         return redirect("/dashboard")
     flash(request, "Email atau password salah", "danger")
-    return render(request, "login.html")
+    return render(request, "login.html", gagal_email=email.strip())  # login.html otomatis buka popup lupa password
 
 
 @router.get("/logout")
