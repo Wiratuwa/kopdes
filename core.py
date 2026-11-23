@@ -3,6 +3,8 @@ import hashlib
 import hmac
 import os
 import secrets
+import smtplib
+from email.message import EmailMessage
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -102,6 +104,25 @@ class NotLoggedIn(Exception):
 def login_required(request: Request):
     if "user_id" not in request.session:
         raise NotLoggedIn()
+
+
+def kirim_email(to, subjek, isi):
+    """Kirim email lewat Gmail SMTP (SMTP_USER + SMTP_PASSWORD = App Password). True kalau terkirim."""
+    user, pw = os.environ.get("SMTP_USER"), os.environ.get("SMTP_PASSWORD")
+    if not (user and pw):
+        print("kirim_email: SMTP_USER/SMTP_PASSWORD belum diatur")
+        return False
+    msg = EmailMessage()
+    msg["From"], msg["To"], msg["Subject"] = os.environ.get("SMTP_FROM", user), to, subjek
+    msg.set_content(isi)
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=15) as s:
+            s.login(user, pw)
+            s.send_message(msg)
+        return True
+    except Exception as e:  # jangan bocorkan error ke user; cukup log
+        print(f"kirim_email gagal: {e!r}")
+        return False
 
 
 class Forbidden(Exception):

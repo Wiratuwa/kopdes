@@ -50,12 +50,12 @@ def produk_list(request: Request, q: str = "", stok_filter: str = "semua", sort:
     )
 
 
-@router.get("/produk/tambah", dependencies=[Depends(admin_required)])
+@router.get("/produk/tambah")
 def produk_tambah(request: Request):
     return render(request, "produk_form.html", p=None)
 
 
-@router.post("/produk/tambah", dependencies=[Depends(admin_required)])
+@router.post("/produk/tambah")
 def produk_tambah_post(request: Request, kode: str = Form(...), nama: str = Form(...),
                        harga: int = Form(...), stok: int = Form(...), stok_min: int = Form(10),
                        harga_beli: str = Form("")):

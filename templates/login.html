@@ -14,8 +14,27 @@
       <label class="form-label" for="password">Password</label>
       <div class="field mb-3">{{ ic('lock') }}<input class="form-control" id="password" type="password" name="password" autocomplete="current-password" required></div>
       <button class="btn btn-primary w-100">{{ ic('box-arrow-in-right') }}Masuk</button>
-      <p class="mt-3 mb-0">Belum punya akun? <a href="{{ url_for('register') }}">Daftar</a></p>
+      <p class="mt-3 mb-1"><a href="#" id="lupaBuka">Lupa password?</a></p>
+      <p class="mb-0">Belum punya akun? <a href="{{ url_for('register') }}">Daftar</a></p>
     </form>
+    <dialog id="lupaDialog" class="lupa-dialog">
+      <form method="post" action="{{ url_for('lupa_password') }}">
+        <h2 class="h5 mb-1">{{ ic('envelope-at') }}Lupa password</h2>
+        <p class="text-muted small">Masukkan email akunmu. Kami kirim link untuk mengganti password.</p>
+        <label class="form-label" for="lupaEmail">Email</label>
+        <div class="field mb-3">{{ ic('envelope') }}<input class="form-control" id="lupaEmail" type="email" name="email" autocomplete="email" required></div>
+        <div class="d-flex gap-2 justify-content-end">
+          <button type="button" class="btn btn-secondary" id="lupaTutup">Batal</button>
+          <button class="btn btn-primary">{{ ic('send') }}Kirim Link</button>
+        </div>
+      </form>
+    </dialog>
+    <script>
+      const dlg = document.getElementById('lupaDialog');
+      document.getElementById('lupaBuka').onclick = e => { e.preventDefault(); dlg.showModal(); };
+      document.getElementById('lupaTutup').onclick = () => dlg.close();
+      dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+    </script>
   </div>
   {% include "_hero_panel.html" %}
 </section>

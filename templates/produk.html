@@ -6,7 +6,7 @@
     <h1 class="page-title mb-0">{{ ic('box-seam') }}Master Produk</h1>
     <small class="text-muted">Total: {{ total }} produk ditemukan</small>
   </div>
-  {% if role == 'admin' %}<a class="btn btn-primary" href="{{ url_for('produk_tambah') }}">{{ ic('plus-lg') }}Tambah Produk</a>{% endif %}
+  <a class="btn btn-primary" href="{{ url_for('produk_tambah') }}">{{ ic('plus-lg') }}Tambah Produk</a>
 </div>
 
 <!-- Search & Filter Bar -->
