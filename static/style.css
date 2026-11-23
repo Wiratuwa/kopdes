@@ -175,10 +175,30 @@ h1, h2, h3, h4, h5 { font-weight: 700; letter-spacing: -0.025em; }
   .auth { grid-template-columns: 1fr; gap: 2.5rem; }
   .float-card { left: .75rem; }
 }
-@media (max-width: 700px) {
-  .nav-user { display: none; }
+.nav-menu { display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 0; }
+.nav-toggle { display: none; margin-left: auto; border: 1px solid var(--line); background: transparent;
+  border-radius: 8px; width: 44px; height: 44px; font-size: 1.4rem; color: var(--ink); }
+/* Tablet & HP: menu jadi hamburger (7 link + 2 tombol tidak muat di bawah ~1100px) */
+@media (max-width: 1099px) {
   .site-nav .container { flex-wrap: wrap; }
-  .nav-links { order: 3; width: 100%; margin: .7rem 0 0; }
+  .nav-toggle { display: inline-flex; align-items: center; justify-content: center; }
+  .nav-menu { display: none; flex-basis: 100%; flex-direction: column; align-items: stretch; gap: .6rem; padding-top: .75rem; }
+  .nav-menu.open { display: flex; }
+  .nav-links { flex-direction: column; gap: 0; margin: 0; overflow: visible; }
+  .nav-links a { padding: .65rem 0; font-size: 1rem; }
+  .nav-menu .btn { width: 100%; padding: .6rem; }
+}
+@media (max-width: 576px) {
+  .page-title { font-size: 1.4rem; }
+  .table { font-size: .85rem; }
+  /* tombol aksi di tabel jadi ikon saja supaya kolom Aksi muat di HP */
+  .table td .btn-sm { padding: .35rem .6rem; font-size: 0; }
+  .table td .btn-sm .bi { font-size: 1rem; margin: 0; }
+  .table td form.d-inline { display: inline-block !important; }
+  .table td, .table > thead th { padding: .6rem .45rem; }
+  .table td.text-end { white-space: nowrap; }
+  .stat .num { font-size: 1.25rem; }
+  #cb-toggle { left: 1rem !important; bottom: 1rem !important; }
 }
 
 /* ---------- Reduced motion: tanpa gerak posisi, tetap fade ---------- */

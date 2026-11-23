@@ -19,6 +19,8 @@
   <div class="container d-flex align-items-center gap-3">
     <a class="brand" href="{{ url_for('dashboard' if user else 'login') }}"><span class="brand-mark">{{ ic('shop') }}</span>Kopdes Desa Aseli</a>
     {% if user %}
+    <button type="button" class="nav-toggle" id="navToggle" aria-label="Buka menu" aria-controls="navMenu" aria-expanded="false">{{ ic('list') }}</button>
+    <div class="nav-menu" id="navMenu">
     <nav class="nav-links me-auto" aria-label="Menu utama">
       {{ nl('Dashboard', 'dashboard', '/dashboard', 'grid-1x2') }}
       {{ nl('Master Produk', 'produk_list', '/produk', 'box-seam') }}
@@ -42,6 +44,7 @@
     </a>
     <a class="btn btn-secondary btn-sm" href="{{ url_for('settings_page') }}">{{ ic('gear') }}Pengaturan</a>
     <a class="btn btn-secondary btn-sm" href="{{ url_for('logout') }}">{{ ic('box-arrow-right') }}Keluar</a>
+    </div>
     {% else %}
     <div class="ms-auto d-flex gap-2">
       <a class="btn btn-secondary btn-sm" href="{{ url_for('login') }}">{{ ic('box-arrow-in-right') }}Masuk</a>
@@ -56,6 +59,10 @@
   {% endfor %}
   {% block content %}{% endblock %}
 </main>
-{% if user %}{% include 'chatbot_widget.html' %}{% endif %}
+{% if user %}{% include 'chatbot_widget.html' %}
+<script>
+const nt = document.getElementById('navToggle'), nm = document.getElementById('navMenu');
+nt.onclick = () => nt.setAttribute('aria-expanded', nm.classList.toggle('open'));
+</script>{% endif %}
 </body>
 </html>
