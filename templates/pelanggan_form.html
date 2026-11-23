@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if c else 'Tambah' }} Pelanggan · Kopdes Desa Aseli{% endblock %}
+{% block content %}
+<h1 class="page-title mb-3">{{ ic('person-lines-fill') }}{{ 'Edit' if c else 'Tambah' }} Pelanggan</h1>
+<form method="post" class="card card-body" style="max-width:480px">
+  <label class="form-label" for="nama">Nama</label>
+  <div class="field mb-3">{{ ic('person') }}<input class="form-control" id="nama" name="nama" value="{{ c.nama if c else '' }}" maxlength="100" required></div>
+  <label class="form-label" for="no_hp">No HP</label>
+  <div class="field mb-3">{{ ic('telephone') }}<input class="form-control" id="no_hp" name="no_hp" value="{{ c.no_hp or '' if c else '' }}" maxlength="20"></div>
+  <label class="form-label" for="alamat">Alamat</label>
+  <div class="field mb-4">{{ ic('geo-alt') }}<input class="form-control" id="alamat" name="alamat" value="{{ c.alamat or '' if c else '' }}"></div>
+  <div class="d-flex gap-2"><button class="btn btn-primary">{{ ic('check-lg') }}Simpan</button>
+  <a class="btn btn-secondary" href="{{ url_for('pelanggan_list') }}">{{ ic('x-lg') }}Batal</a></div>
+</form>
+{% endblock %}

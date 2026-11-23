@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Catat Stok Masuk · Kopdes Desa Aseli{% endblock %}
+{% block content %}
+<h1 class="page-title mb-3">{{ ic('box-arrow-in-down') }}Catat Stok Masuk</h1>
+<form method="post" class="card card-body" style="max-width:480px">
+  <label class="form-label" for="produk_id">Produk</label>
+  <div class="field mb-3">{{ ic('box-seam') }}<select class="form-select" id="produk_id" name="produk_id" required>
+    {% for p in produk %}<option value="{{ p.id }}" {% if p.id == produk_id %}selected{% endif %}>{{ p.kode }} - {{ p.nama }} (stok {{ p.stok }})</option>{% endfor %}
+  </select></div>
+  <label class="form-label" for="qty">Jumlah Masuk</label>
+  <div class="field mb-3">{{ ic('123') }}<input class="form-control" id="qty" type="number" name="qty" min="1" value="1" required></div>
+  <label class="form-label" for="harga_beli">Harga Beli (per unit)</label>
+  <div class="field mb-3">{{ ic('cash') }}<input class="form-control" id="harga_beli" type="number" name="harga_beli" min="0" step="1" required></div>
+  <label class="form-label" for="supplier">Supplier (opsional)</label>
+  <div class="field mb-4">{{ ic('truck') }}<input class="form-control" id="supplier" name="supplier" maxlength="100"></div>
+  <div class="d-flex gap-2"><button class="btn btn-primary">{{ ic('check-lg') }}Simpan</button>
+  <a class="btn btn-secondary" href="{{ url_for('stok_masuk_list') }}">{{ ic('x-lg') }}Batal</a></div>
+</form>
+{% endblock %}

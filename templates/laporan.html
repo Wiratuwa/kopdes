@@ -20,4 +20,18 @@
   </tbody>
   <tfoot><tr class="fw-bold"><td colspan="5" class="text-end">Total Penjualan</td><td class="text-end">{{ total|rp }}</td></tr></tfoot>
 </table></div>
+
+<div class="row g-3 mt-2">
+  <div class="col-md-4"><div class="card card-body"><small class="text-muted">Laba kotor (estimasi)</small>
+    <div class="fs-4 fw-bold">{{ laba|rp }}</div>
+    {% if tanpa_hb %}<small class="text-muted">{{ tanpa_hb }} baris tanpa harga beli tidak dihitung.</small>{% endif %}</div></div>
+  <div class="col-md-4"><div class="card"><div class="card-header">{{ ic('box-seam') }}Per Produk</div>
+    <ul class="list-group list-group-flush">
+      {% for nama, v in per_produk %}<li class="list-group-item d-flex justify-content-between">{{ nama }} <small class="text-muted">x{{ v[0] }}</small><span class="fw-semibold">{{ v[1]|rp }}</span></li>
+      {% else %}<li class="list-group-item text-muted">-</li>{% endfor %}</ul></div></div>
+  <div class="col-md-4"><div class="card"><div class="card-header">{{ ic('person-badge') }}Per Kasir</div>
+    <ul class="list-group list-group-flush">
+      {% for nama, t in per_kasir %}<li class="list-group-item d-flex justify-content-between">{{ nama }}<span class="fw-semibold">{{ t|rp }}</span></li>
+      {% else %}<li class="list-group-item text-muted">-</li>{% endfor %}</ul></div></div>
+</div>
 {% endblock %}

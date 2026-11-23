@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Stok Masuk · Kopdes Desa Aseli{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="page-title">{{ ic('box-arrow-in-down') }}Stok Masuk</h1>
+  <a class="btn btn-primary" href="{{ url_for('stok_masuk_tambah') }}">{{ ic('plus-lg') }}Catat Stok Masuk</a>
+</div>
+<div class="table-responsive"><table class="table table-hover">
+  <thead><tr><th>Tanggal</th><th>Produk</th><th class="text-end">Qty</th><th class="text-end">Harga Beli</th><th>Supplier</th><th>Petugas</th></tr></thead>
+  <tbody>
+  {% for s in rows %}
+  <tr><td>{{ s.tanggal }}</td><td>{{ s.kode }} - {{ s.produk }}</td><td class="text-end">{{ s.qty }}</td>
+    <td class="text-end">{{ s.harga_beli|rp }}</td><td>{{ s.supplier or '-' }}</td><td>{{ s.petugas }}</td></tr>
+  {% else %}<tr><td colspan="6" class="text-center text-muted empty">{{ ic('inbox') }}Belum ada stok masuk</td></tr>{% endfor %}
+  </tbody></table></div>
+{% endblock %}

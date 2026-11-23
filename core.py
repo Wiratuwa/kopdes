@@ -86,6 +86,7 @@ def render(request: Request, name, **ctx):
     ctx["flashes"] = request.session.pop("flash", [])
     ctx["user"] = request.session.get("nama")
     ctx["user_foto"] = request.session.get("foto")
+    ctx["role"] = request.session.get("role")
     return templates.TemplateResponse(request, name, ctx)
 
 
@@ -101,3 +102,20 @@ class NotLoggedIn(Exception):
 def login_required(request: Request):
     if "user_id" not in request.session:
         raise NotLoggedIn()
+
+
+class Forbidden(Exception):
+    pass
+
+
+def admin_required(request: Request):
+    login_required(request)
+    if request.session.get("role") != "admin":
+        flash(request, "Akses khusus admin", "danger")
+        raise Forbidden()
+
+
+def catat(request: Request, aksi, detail=""):
+    """Tulis log aktivitas user yang sedang login."""
+    query("INSERT INTO log_aktivitas (user_id, aksi, detail) VALUES (%s,%s,%s)",
+          (request.session.get("user_id"), aksi, detail))

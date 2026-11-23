@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Struk {{ n.no_nota }} · Kopdes Desa Aseli{% endblock %}
+{% block content %}
+<div class="card card-body mx-auto" style="max-width:380px">
+  <h5 class="text-center mb-0">Kopdes Desa Aseli</h5>
+  <p class="text-center text-muted small mb-2">{{ n.no_nota }}<br>{{ n.tanggal }} &middot; Kasir: {{ n.kasir }}</p>
+  {% if n.pelanggan %}<p class="small mb-2">Pelanggan: <b>{{ n.pelanggan }}</b></p>{% endif %}
+  <table class="table table-sm mb-2">
+    {% for i in items %}<tr><td>{{ i.nama }}<br><small class="text-muted">{{ i.qty }} x {{ i.harga|rp }}</small></td><td class="text-end">{{ i.total|rp }}</td></tr>{% endfor %}
+    <tr class="fw-bold"><td>Total</td><td class="text-end">{{ n.total|rp }}</td></tr>
+  </table>
+  <p class="text-center mb-0 fw-semibold">{{ 'KASBON (belum lunas)' if n.status == 'utang' else 'LUNAS' }}</p>
+</div>
+<div class="text-center mt-3 d-print-none">
+  <button class="btn btn-primary" onclick="window.print()">{{ ic('printer') }}Cetak</button>
+  <a class="btn btn-secondary" href="{{ url_for('transaksi_list') }}">Kembali</a>
+</div>
+<style>@media print { .site-nav, #cb-toggle, #cb-panel { display:none !important } }</style>
+{% endblock %}

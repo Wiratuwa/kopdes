@@ -31,6 +31,15 @@
   {% endfor %}
 </div>
 
+<div class="card mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <span>{{ ic('graph-up') }} <strong>Tren Omzet 30 Hari Terakhir</strong></span>
+    <span class="small">Bulan ini <b>{{ bandingan.bulan_ini|rp }}</b> &middot; bulan lalu {{ bandingan.bulan_lalu|rp }}
+      {% if persen is not none %}<span class="badge {{ 'bg-success' if persen >= 0 else 'bg-danger' }}">{{ '+' if persen >= 0 }}{{ persen }}%</span>{% endif %}</span>
+  </div>
+  <div class="card-body"><div style="position: relative; height: 220px;"><canvas id="trenChart"></canvas></div></div>
+</div>
+
 <!-- FITUR 1: Grafik Barang Paling Banyak Terjual Per Minggu (Range 1 Bulan) -->
 <div class="card mb-4">
   <div class="card-header d-flex justify-content-between align-items-center">
@@ -77,9 +86,9 @@
 </div>
 
 <div class="row g-3">
-  <div class="col-md-6"><div class="card"><div class="card-header">{{ ic('exclamation-triangle') }}Stok Menipis (&lt; 10)</div>
+  <div class="col-md-6"><div class="card"><div class="card-header">{{ ic('exclamation-triangle') }}Stok Menipis</div>
     <ul class="list-group list-group-flush">
-      {% for p in menipis %}<li class="list-group-item d-flex justify-content-between align-items-center">{{ p.nama }}<span class="badge-stok">{{ p.stok }}</span></li>
+      {% for p in menipis %}<li class="list-group-item d-flex justify-content-between align-items-center">{{ p.nama }}<span>{% if role == 'admin' %}<a class="btn btn-sm btn-outline-primary me-2" href="{{ url_for('stok_masuk_tambah') }}?produk_id={{ p.id }}">Restok</a>{% endif %}<span class="badge-stok">{{ p.stok }}</span></span></li>
       {% else %}<li class="list-group-item text-muted">{{ ic('check2-circle') }} Semua stok aman</li>{% endfor %}
     </ul></div></div>
   <div class="col-md-6"><div class="card"><div class="card-header">{{ ic('clock-history') }}Transaksi Terakhir</div>
@@ -93,6 +102,14 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+  new Chart(document.getElementById('trenChart'), {
+    type: 'line',
+    data: { labels: {{ tren_labels | tojson }},
+            datasets: [{ label: 'Omzet', data: {{ tren_values | tojson }}, borderColor: '#2563eb',
+                         backgroundColor: 'rgba(37, 99, 235, 0.12)', fill: true, tension: 0.3, pointRadius: 2 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+               scales: { y: { beginAtZero: true }, x: { grid: { display: false } } } }
+  });
   const ctx = document.getElementById('weeklyTopChart').getContext('2d');
   const labels = {{ chart_labels | tojson }};
   const values = {{ chart_values | tojson }};

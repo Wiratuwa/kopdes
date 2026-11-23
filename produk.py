@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends, Form, Request
 from psycopg2 import errors
 
-from core import flash, login_required, query, redirect, render
+from core import admin_required, catat, flash, login_required, query, redirect, render
 
 router = APIRouter(dependencies=[Depends(login_required)])
 
@@ -19,9 +19,9 @@ def produk_list(request: Request, q: str = "", stok_filter: str = "semua", sort:
         params.extend([kw, kw])
 
     if stok_filter == "aman":
-        sql += " AND stok >= 10"
+        sql += " AND stok >= stok_min"
     elif stok_filter == "menipis":
-        sql += " AND stok > 0 AND stok < 10"
+        sql += " AND stok > 0 AND stok < stok_min"
     elif stok_filter == "habis":
         sql += " AND stok = 0"
 
@@ -50,28 +50,31 @@ def produk_list(request: Request, q: str = "", stok_filter: str = "semua", sort:
     )
 
 
-@router.get("/produk/tambah")
+@router.get("/produk/tambah", dependencies=[Depends(admin_required)])
 def produk_tambah(request: Request):
     return render(request, "produk_form.html", p=None)
 
 
-@router.post("/produk/tambah")
+@router.post("/produk/tambah", dependencies=[Depends(admin_required)])
 def produk_tambah_post(request: Request, kode: str = Form(...), nama: str = Form(...),
-                       harga: int = Form(...), stok: int = Form(...)):
-    if harga < 0 or stok < 0:
-        flash(request, "Harga dan stok tidak boleh negatif", "danger")
+                       harga: int = Form(...), stok: int = Form(...), stok_min: int = Form(10),
+                       harga_beli: str = Form("")):
+    hb = int(harga_beli) if harga_beli.isdigit() else None
+    if harga < 0 or stok < 0 or stok_min < 0:
+        flash(request, "Harga, stok, dan batas stok tidak boleh negatif", "danger")
         return render(request, "produk_form.html", p=None)
     try:
-        query("INSERT INTO produk (kode, nama, harga, stok) VALUES (%s,%s,%s,%s)",
-              (kode.strip().upper(), nama.strip(), harga, stok))
+        query("INSERT INTO produk (kode, nama, harga, stok, stok_min, harga_beli) VALUES (%s,%s,%s,%s,%s,%s)",
+              (kode.strip().upper(), nama.strip(), harga, stok, stok_min, hb))
     except errors.UniqueViolation:
         flash(request, "Kode produk sudah dipakai", "danger")
         return render(request, "produk_form.html", p=None)
+    catat(request, "tambah_produk", kode.strip().upper())
     flash(request, "Produk ditambahkan")
     return redirect("/produk")
 
 
-@router.get("/produk/{id}/edit")
+@router.get("/produk/{id}/edit", dependencies=[Depends(admin_required)])
 def produk_edit(request: Request, id: int):
     p = query("SELECT * FROM produk WHERE id=%s", (id,), one=True)
     if not p:
@@ -79,29 +82,33 @@ def produk_edit(request: Request, id: int):
     return render(request, "produk_form.html", p=p)
 
 
-@router.post("/produk/{id}/edit")
+@router.post("/produk/{id}/edit", dependencies=[Depends(admin_required)])
 def produk_edit_post(request: Request, id: int, kode: str = Form(...), nama: str = Form(...),
-                     harga: int = Form(...), stok: int = Form(...)):
+                     harga: int = Form(...), stok: int = Form(...), stok_min: int = Form(10),
+                     harga_beli: str = Form("")):
     p = query("SELECT * FROM produk WHERE id=%s", (id,), one=True)
     if not p:
         return redirect("/produk")
-    if harga < 0 or stok < 0:
-        flash(request, "Harga dan stok tidak boleh negatif", "danger")
+    hb = int(harga_beli) if harga_beli.isdigit() else None
+    if harga < 0 or stok < 0 or stok_min < 0:
+        flash(request, "Harga, stok, dan batas stok tidak boleh negatif", "danger")
         return render(request, "produk_form.html", p=p)
     try:
-        query("UPDATE produk SET kode=%s, nama=%s, harga=%s, stok=%s WHERE id=%s",
-              (kode.strip().upper(), nama.strip(), harga, stok, id))
+        query("UPDATE produk SET kode=%s, nama=%s, harga=%s, stok=%s, stok_min=%s, harga_beli=%s WHERE id=%s",
+              (kode.strip().upper(), nama.strip(), harga, stok, stok_min, hb, id))
     except errors.UniqueViolation:
         flash(request, "Kode produk sudah dipakai", "danger")
         return render(request, "produk_form.html", p=p)
+    catat(request, "edit_produk", kode.strip().upper())
     flash(request, "Produk diperbarui")
     return redirect("/produk")
 
 
-@router.post("/produk/{id}/hapus")
+@router.post("/produk/{id}/hapus", dependencies=[Depends(admin_required)])
 def produk_hapus(request: Request, id: int):
     try:
         query("DELETE FROM produk WHERE id=%s", (id,))
+        catat(request, "hapus_produk", str(id))
         flash(request, "Produk dihapus")
     except errors.ForeignKeyViolation:
         flash(request, "Produk tidak bisa dihapus karena sudah dipakai di transaksi", "danger")

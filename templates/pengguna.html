@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Pengguna · Kopdes Desa Aseli{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="page-title">{{ ic('person-gear') }}Pengguna</h1>
+  <a class="btn btn-secondary" href="{{ url_for('log_aktivitas') }}">{{ ic('journal-text') }}Log Aktivitas</a>
+</div>
+<div class="table-responsive"><table class="table table-hover align-middle">
+  <thead><tr><th>Nama</th><th>Email</th><th>Peran</th><th>Status</th><th></th></tr></thead>
+  <tbody>
+  {% for u in rows %}
+  <tr><td>{{ u.nama }}{% if u.id == me %} <small class="text-muted">(Anda)</small>{% endif %}</td><td>{{ u.email }}</td>
+    <td>{% if u.id == me %}<span class="badge bg-primary">{{ u.role }}</span>{% else %}
+      <form method="post" action="{{ url_for('pengguna_role', id=u.id) }}" class="d-flex gap-1">
+        <select name="role" class="form-select form-select-sm" style="width:auto" aria-label="Peran">
+          <option value="admin" {% if u.role == 'admin' %}selected{% endif %}>admin</option>
+          <option value="kasir" {% if u.role == 'kasir' %}selected{% endif %}>kasir</option>
+        </select><button class="btn btn-sm btn-secondary">Simpan</button></form>{% endif %}</td>
+    <td>{% if u.aktif %}<span class="badge bg-success">Aktif</span>{% else %}<span class="badge bg-danger">Nonaktif</span>{% endif %}</td>
+    <td class="text-end">{% if u.id != me %}
+      <form method="post" action="{{ url_for('pengguna_aktif', id=u.id) }}" class="d-inline">
+        <button class="btn btn-sm btn-outline-secondary">{{ 'Nonaktifkan' if u.aktif else 'Aktifkan' }}</button></form>{% endif %}</td></tr>
+  {% endfor %}
+  </tbody></table></div>
+{% endblock %}

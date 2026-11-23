@@ -9,10 +9,13 @@ import auth
 import chatbot
 import dashboard
 import laporan
+import pelanggan
+import pengguna
 import produk
 import settings
+import stok_masuk
 import transaksi
-from core import BASE, NotLoggedIn, redirect, templates
+from core import BASE, Forbidden, NotLoggedIn, redirect, templates
 
 app = FastAPI(title="Kopdes Desa Aseli")
 app.add_middleware(SessionMiddleware,
@@ -29,5 +32,10 @@ async def _belum_login(request: Request, exc: NotLoggedIn):
     return redirect("/login")
 
 
-for modul in (auth, dashboard, produk, transaksi, laporan, settings, chatbot):
+@app.exception_handler(Forbidden)
+async def _bukan_admin(request: Request, exc: Forbidden):
+    return redirect("/dashboard")
+
+
+for modul in (auth, dashboard, produk, transaksi, pelanggan, stok_masuk, laporan, pengguna, settings, chatbot):
     app.include_router(modul.router)

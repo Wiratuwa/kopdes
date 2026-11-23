@@ -23,7 +23,12 @@
       {{ nl('Dashboard', 'dashboard', '/dashboard', 'grid-1x2') }}
       {{ nl('Master Produk', 'produk_list', '/produk', 'box-seam') }}
       {{ nl('Transaksi', 'transaksi_list', '/transaksi', 'receipt') }}
+      {{ nl('Pelanggan', 'pelanggan_list', '/pelanggan', 'people') }}
+      {% if role == 'admin' %}
+      {{ nl('Stok Masuk', 'stok_masuk_list', '/stok-masuk', 'box-arrow-in-down') }}
       {{ nl('Laporan', 'laporan', '/laporan', 'bar-chart-line') }}
+      {{ nl('Pengguna', 'pengguna_list', '/pengguna', 'person-gear') }}
+      {% endif %}
     </nav>
     <a class="nav-user" href="{{ url_for('settings_page') }}">
       {% if user_foto and user_foto.startswith('data:image') %}

@@ -23,6 +23,10 @@ Bisa search nama/kode, filter stok (aman/menipis/habis), dan sorting berbagai ko
 stok otomatis berkurang. Lihat riwayat semua transaksi.
 4. **Laporan** (/laporan) — Rekap penjualan per periode tanggal. Bisa diekspor ke file Excel (.xlsx).
 5. **Pengaturan** (/settings) — Edit profil (nama, foto profil/emoji avatar), ganti password.
+6. **Pelanggan** (/pelanggan) — Data pelanggan, kasbon (bayar nanti) dan pembayaran cicilan.
+7. **Stok Masuk** (/stok-masuk, khusus admin) — Catat barang masuk dari supplier + harga beli.
+8. **Pengguna** (/pengguna, khusus admin) — Atur peran admin/kasir dan log aktivitas.
+Transaksi bisa berisi banyak item dan punya struk cetak. Laporan (khusus admin) memuat laba kotor.
 
 ## Cara Menggunakan Website:
 - **Login/Daftar**: Buka website → halaman login muncul. Masukkan email & password. \
@@ -67,10 +71,10 @@ def _build_context():
         parts.append("DAFTAR PRODUK:\n" + "\n".join(lines))
 
     # Produk stok menipis
-    low = query("SELECT nama, stok FROM produk WHERE stok <= 5 ORDER BY stok")
+    low = query("SELECT nama, stok FROM produk WHERE stok < stok_min ORDER BY stok")
     if low:
         lines = [f"  ⚠ {p['nama']}: sisa {p['stok']}" for p in low]
-        parts.append("STOK MENIPIS (≤5):\n" + "\n".join(lines))
+        parts.append("STOK MENIPIS (di bawah batas tiap produk):\n" + "\n".join(lines))
     else:
         parts.append("STOK MENIPIS: Tidak ada produk yang stoknya menipis.")
 

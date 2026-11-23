@@ -6,7 +6,7 @@
     <h1 class="page-title mb-0">{{ ic('box-seam') }}Master Produk</h1>
     <small class="text-muted">Total: {{ total }} produk ditemukan</small>
   </div>
-  <a class="btn btn-primary" href="{{ url_for('produk_tambah') }}">{{ ic('plus-lg') }}Tambah Produk</a>
+  {% if role == 'admin' %}<a class="btn btn-primary" href="{{ url_for('produk_tambah') }}">{{ ic('plus-lg') }}Tambah Produk</a>{% endif %}
 </div>
 
 <!-- Search & Filter Bar -->
@@ -21,8 +21,8 @@
     <div class="col-6 col-md-3">
       <select name="stok_filter" class="form-select">
         <option value="semua" {% if stok_filter == 'semua' %}selected{% endif %}>Semua Status Stok</option>
-        <option value="aman" {% if stok_filter == 'aman' %}selected{% endif %}>Stok Aman (&ge; 10)</option>
-        <option value="menipis" {% if stok_filter == 'menipis' %}selected{% endif %}>Stok Menipis (&lt; 10)</option>
+        <option value="aman" {% if stok_filter == 'aman' %}selected{% endif %}>Stok Aman</option>
+        <option value="menipis" {% if stok_filter == 'menipis' %}selected{% endif %}>Stok Menipis</option>
         <option value="habis" {% if stok_filter == 'habis' %}selected{% endif %}>Stok Habis (0)</option>
       </select>
     </div>
@@ -58,16 +58,16 @@
     <td class="text-end">
       {% if p.stok == 0 %}
         <span class="badge bg-danger">Habis</span>
-      {% elif p.stok < 10 %}
+      {% elif p.stok < p.stok_min %}
         <span class="badge bg-warning text-dark">{{ p.stok }} (Menipis)</span>
       {% else %}
         <span class="badge bg-success">{{ p.stok }}</span>
       {% endif %}
     </td>
-    <td class="text-end">
+    <td class="text-end">{% if role == 'admin' %}
       <a class="btn btn-sm btn-secondary" href="{{ url_for('produk_edit', id=p.id) }}">{{ ic('pencil') }}Edit</a>
       <form class="d-inline" method="post" action="{{ url_for('produk_hapus', id=p.id) }}" onsubmit="return confirm('Hapus produk ini?')">
-        <button class="btn btn-sm btn-danger">{{ ic('trash') }}Hapus</button></form>
+        <button class="btn btn-sm btn-danger">{{ ic('trash') }}Hapus</button></form>{% endif %}
     </td></tr>
   {% else %}<tr><td colspan="5" class="text-center text-muted empty py-4">{{ ic('inbox') }} Tidak ada produk yang sesuai kriteria pencarian</td></tr>{% endfor %}
   </tbody></table></div>

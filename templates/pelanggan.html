@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Pelanggan · Kopdes Desa Aseli{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="page-title">{{ ic('people') }}Pelanggan &amp; Kasbon</h1>
+  <a class="btn btn-primary" href="{{ url_for('pelanggan_tambah') }}">{{ ic('plus-lg') }}Tambah Pelanggan</a>
+</div>
+<div class="table-responsive"><table class="table table-hover align-middle">
+  <thead><tr><th>Nama</th><th>No HP</th><th class="text-end">Sisa Utang</th><th></th></tr></thead>
+  <tbody>
+  {% for c in rows %}
+  <tr><td class="fw-medium">{{ c.nama }}</td><td>{{ c.no_hp or '-' }}</td>
+    <td class="text-end">{% if c.utang > 0 %}<span class="badge bg-warning text-dark">{{ c.utang|rp }}</span>{% else %}<span class="text-muted">Lunas</span>{% endif %}</td>
+    <td class="text-end"><a class="btn btn-sm btn-secondary" href="{{ url_for('pelanggan_detail', id=c.id) }}">{{ ic('eye') }}Detail</a></td></tr>
+  {% else %}<tr><td colspan="4" class="text-center text-muted empty">{{ ic('inbox') }}Belum ada pelanggan</td></tr>{% endfor %}
+  </tbody></table></div>
+{% endblock %}

@@ -23,12 +23,12 @@ def dashboard(request: Request, bulan: int = None, tahun: int = None):
 
     s = query("""
         SELECT (SELECT COUNT(*) FROM produk) AS jml_produk,
-               (SELECT COUNT(*) FROM transaksi) AS jml_transaksi,
+               (SELECT COUNT(*) FROM nota) AS jml_transaksi,
                (SELECT COALESCE(SUM(total),0) FROM transaksi WHERE tanggal = CURRENT_DATE) AS omzet_hari_ini,
                (SELECT COALESCE(SUM(total),0) FROM transaksi) AS omzet_total
     """, one=True)
 
-    menipis = query("SELECT * FROM produk WHERE stok < 10 ORDER BY stok LIMIT 5")
+    menipis = query("SELECT * FROM produk WHERE stok < stok_min ORDER BY stok LIMIT 5")
     terakhir = query("""SELECT t.*, p.nama AS produk FROM transaksi t
                         JOIN produk p ON p.id = t.produk_id
                         ORDER BY t.id DESC LIMIT 5""")
@@ -102,6 +102,22 @@ def dashboard(request: Request, bulan: int = None, tahun: int = None):
 
     nama_bulan = BULAN_INDONESIA[bulan]
 
+    # Tren omzet harian 30 hari terakhir (hari tanpa transaksi = 0)
+    tren_raw = query("""SELECT g::date AS hari, COALESCE(SUM(t.total), 0) AS omzet
+                        FROM generate_series(CURRENT_DATE - 29, CURRENT_DATE, '1 day') g
+                        LEFT JOIN transaksi t ON t.tanggal = g::date
+                        GROUP BY g ORDER BY g""")
+    tren_labels = [r["hari"].strftime("%d/%m") for r in tren_raw]
+    tren_values = [float(r["omzet"]) for r in tren_raw]
+
+    # Omzet bulan ini vs bulan lalu
+    bandingan = query("""SELECT
+        COALESCE(SUM(total) FILTER (WHERE date_trunc('month', tanggal) = date_trunc('month', CURRENT_DATE)), 0) AS bulan_ini,
+        COALESCE(SUM(total) FILTER (WHERE date_trunc('month', tanggal) = date_trunc('month', CURRENT_DATE) - INTERVAL '1 month'), 0) AS bulan_lalu
+        FROM transaksi""", one=True)
+    lalu = float(bandingan["bulan_lalu"])
+    persen = round((float(bandingan["bulan_ini"]) - lalu) / lalu * 100) if lalu else None
+
     return render(
         request,
         "dashboard.html",
@@ -116,6 +132,10 @@ def dashboard(request: Request, bulan: int = None, tahun: int = None):
         chart_values=chart_values,
         chart_products=chart_products,
         chart_totals=chart_totals,
+        tren_labels=tren_labels,
+        tren_values=tren_values,
+        bandingan=bandingan,
+        persen=persen,
         bulan_list=[(i, BULAN_INDONESIA[i]) for i in range(1, 13)],
         tahun_list=list(range(2023, today.year + 2))
     )
